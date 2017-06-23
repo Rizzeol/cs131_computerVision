@@ -20,4 +20,10 @@ function features = ComputePositionColorFeatures(img)
     %                              YOUR CODE HERE                             %
     %                                                                         %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    rgb=ComputeColorFeatures(img);
+    features(:,:,1)=rgb(:,:,1);
+    features(:,:,2)=rgb(:,:,2);
+    features(:,:,3)=rgb(:,:,3);
+    features(:,:,4)=repmat((1:width),height,1);
+    features(:,:,5)=repmat((1:height)',1,width);
 end

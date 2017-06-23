@@ -21,4 +21,10 @@ function featuresNorm = NormalizeFeatures(features)
 %                HINT: The functions mean and std may be useful                %
 %                                                                              %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  h = size(features,1);
+  w = size(features,2);
+  d = size(features,3);
+  m=mean(mean(features));
+  sigma = reshape(std(reshape(features,w*h,d)),[1 1 d]);
+  featuresNorm=(features-m)./sigma;
 end

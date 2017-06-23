@@ -1,6 +1,6 @@
 function idx = HAClustering(X, k, visualize2D)
 % Run the hierarchical agglomerative clustering algorithm.
-% 
+%
 % The algorithm is conceptually simple:
 %
 % Assign each point to its own cluster
@@ -51,13 +51,13 @@ function idx = HAClustering(X, k, visualize2D)
 
     % The number of points to cluster.
     m = size(X, 1);
-        
+
     % The dimension of each point.
     n = size(X, 2);
-    
+
     % The number of clusters that we currently have.
     num_clusters = m;
-    
+
     % The assignment of points to clusters. If idx(i) = c then X(i, :) is
     % assigned to cluster c. Since each point is initally assigned to its
     % own cluster, we initialize idx to the column vector [1; 2; ...; m].
@@ -72,7 +72,7 @@ function idx = HAClustering(X, k, visualize2D)
     % cluster c contains n points. Since each point is initially assigned
     % to its own cluster, each cluster size is initialized to 1.
     cluster_sizes = ones(m, 1);
-    
+
     % The distances between the centroids of the clusters. For ci != cj,
     % dists(ci, cj) = d means that the Euclidean distance between
     % centroids(ci, :) and centroids(cj, :) is d. We will choose the pair
@@ -81,24 +81,24 @@ function idx = HAClustering(X, k, visualize2D)
     % therefore we set the diagonal elements of dists to be +Inf.
     dists = squareform(pdist(centroids));
     dists = dists + diag(Inf(m, 1));
-    
+
     % If we are going to display the clusters graphically then create a
     % figure in which to draw the visualization.
     figHandle = [];
     if n == 2 && visualize2D
         figHandle = figure;
     end
-    
-    
+
+
     % In the 2D case we can easily visualize the starting points.
-    if n == 2 && visualize2D          
+    if n == 2 && visualize2D
         VisualizeClusters2D(X, idx, centroids, figHandle);
         pause;
     end
-    
+
     while num_clusters > k
-        
-        
+
+
         % Find the pair of clusters that are closest together.
         % Set i and j to be the indices of the nearest pair of clusters.
         i = 0;
@@ -108,40 +108,46 @@ function idx = HAClustering(X, k, visualize2D)
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        [~,I]=min(dists(:));
+        i=mod(I,m);
+        j=ceil(I/m);
+        if i==0
+          i=m;
+        end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+
         % Make sure that i < j
-        if i > j        
+        if i > j
             t = i;
             i = j;
             j = t;
         end
-                
+
+
         % Next we need to merge cluster j into cluster i.
         %
         % We also need to 'delete' cluster j. We will do this by setting
         % its cluster size to 0 and moving its centroid to +Inf. This
         % ensures that the distance from cluster j to any other cluster is
         % +Inf.
-        
+
         % Assign all points currently in cluster j to cluster i.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            YOUR CODE HERE                           %
         %                                                                     %
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
-        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        idx(find(idx==idx(j)))=i;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+
         % Compute the new centroid for clusters i and set the centroid of
         % cluster j to +Inf.
         % HINT: You should be able to compute both updated cluster
@@ -151,26 +157,28 @@ function idx = HAClustering(X, k, visualize2D)
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        centroids(i,:)=mean([centroids(i,:);centroids(j,:)]);
+        centroids(j,:)=Inf;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+
         % Update the size of clusters i and j.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        cluster_sizes(i)=cluster_sizes(i)+cluster_sizes(j);
+        cluster_sizes(j)=0;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                     
+
         % Update the dists array. In particular, we need to update the
         % distances from clusters i and j to all other clusters.
         % Hint: You might find the pdist2 function useful.
@@ -180,25 +188,33 @@ function idx = HAClustering(X, k, visualize2D)
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        bla=pdist2(centroids(i,:),centroids);
+        infinite=find(bla==0);
+        bla(infinite)=Inf;
+
+        dists(i,:)=bla;
+        dists(:,i)=bla';
+
+        dists(j,:)=Inf;
+        dists(:,j)=Inf;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        
+
+
         % If everything worked correctly then we have one less cluster.
         num_clusters = num_clusters - 1;
-        
+
         % In the 2D case we can easily visualize the clusters.
-        if n == 2 && visualize2D          
+        if n == 2 && visualize2D
             VisualizeClusters2D(X, idx, centroids, figHandle);
             pause;
         end
-        
+
     end
-    
+
     % Now we need to reindex the clusters from 1 to k
     idx = ReindexClusters(idx);
 end

@@ -1,5 +1,5 @@
-% Read the input images. 
-img = imread('../imgs/cat_mouse.jpg');
+% Read the input images.
+img = imread('../imgs/black_kitten_star.jpg');
 background = imread('../imgs/backgrounds/beach.jpg');
 
 % Choose the number of clusters and the clustering method.

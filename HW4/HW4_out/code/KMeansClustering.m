@@ -25,7 +25,7 @@ function idx = KMeansClustering(X, k, visualize2D, centers)
     end
     m = size(X, 1);
     n = size(X, 2);
-    
+
     % If we are going to display the clusters graphically then create a
     % figure in which to draw the visualization.
     figHandle = [];
@@ -33,42 +33,42 @@ function idx = KMeansClustering(X, k, visualize2D, centers)
         figHandle = figure;
     end
 
-    
+
     % If initial cluster centers were not provided then initialize cluster
     % centers to random rows of X. Each row of the centers variable should
     % contain the center of a cluster, so that centers(c, :) is the center
     % of the cth cluster.
     if ~exist('centers', 'var')
-        centers = zeros(k, n);
+        %centers = zeros(k, n);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        centers=X(randperm(m,k),:);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
-    
+
     % The assignments of points to clusters. If idx(i) == c then the point
     % X(i, :) belongs to the cth cluster.
     idx = zeros(m, 1);
 
     % The number of iterations that we have performed.
     iter = 0;
-    
+
     % If the assignments of points to clusters have not converged after
     % performing MAX_ITER iterations then we will break and just return the
     % current cluster assignments.
     MAX_ITER = 100;
-    
-    while true        
+
+    while true
         % Store old cluster assignments
         old_idx = idx;
-        
+
         % Compute distances from each point to the centers and assign each
         % point to the closest cluster.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,13 +76,22 @@ function idx = KMeansClustering(X, k, visualize2D, centers)
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+%        tem=idx;
+
+%        dist=pdist2(X,centers,'euclidean');
+%        mindist=repmat(min(dist,[],2),1,k);
+%        idx=(dist==mindist)*[1:k]';
+
+        D=pdist2(centers,X);
+        [~,idx]=min(D);
+        idx=idx.';
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+
         % Break if cluster assignments didn't change
         if idx == old_idx
             break;
@@ -94,19 +103,21 @@ function idx = KMeansClustering(X, k, visualize2D, centers)
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        for i=1:k
+          centers(i,:)=mean(X(find(idx==i),:));
+        end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+
         % Display the points in the 2D case.
         if n == 2 && visualize2D
             VisualizeClusters2D(X, idx, centers, figHandle);
             pause;
         end
-        
+
         % Stop early if we have performed more than MAX_ITER iterations
         iter = iter + 1;
         if iter > MAX_ITER
