@@ -8,7 +8,7 @@ function label = compareFaces(method, testImg)
 % RETURNS:
 %   label - the label of the person in the training set who best matches
 %       the testImg face
-    
+
     % load our face database into a matrix.
     [rawFaceMatrix, imageOwner, imgHeight, imgWidth] = readInFaces();
     % This give us: faceMatrix - column 1 of this matrix is image 1,
@@ -19,7 +19,7 @@ function label = compareFaces(method, testImg)
     %       holds the integer label of image (i). Images from the same
     %       person have the same label.
     % imgHeight - the height of an original image (they are all the same
-    %       size) 
+    %       size)
     % imgWidth - the width of an original image (they are all the same
     %       size)
 
@@ -30,19 +30,19 @@ function label = compareFaces(method, testImg)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Find the mean column of rawFaceMatrix, and subtract it from every
     % column to produce a zero-mean matrix A
-    meanFace = zeros(size(rawFaceMatrix,1),1);
-    A = zeros(size(rawFaceMatrix));
-    
+    meanFace = mean(rawFaceMatrix,2);
+    A = rawFaceMatrix - meanFace;
+
     % Also "unroll" testImg to produce a single column vector, and
     % subtract the mean column from it, so that it can be compared to the
     % columns in the matrix A.
-    
+    testImg=testImg(:)-meanFace;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %                                                                     %
     %                            END YOUR CODE                            %
     %                                                                     %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     % Now that we have testImg in the same form as the columns of A, we can
     % try various methods to compare it to the columns.
     if strcmp(method,'simple')
@@ -55,7 +55,7 @@ function label = compareFaces(method, testImg)
         % index of the closest. The indexOfClosestColumn() function below
         % will be helpful.
         indexOfClosestMatch = 0;
-        
+        [~, indexOfClosestMatch] = indexOfClosestColumn(A, testImg);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
@@ -72,14 +72,14 @@ function label = compareFaces(method, testImg)
         % and compare it to the PCA-space version of each training image to
         % find the closest.
         numComponentsToKeep = 20;
-        prinComponents = [];
-        weightCols = [];
-        
+        [prinComponents, weightCols]=doPCA(A,numComponentsToKeep);
+        testw=testImg'*prinComponents;
+
         indexOfClosestMatch = 0;
-        
+        [~, indexOfClosestMatch] = indexOfClosestColumn(weightCols, testw');
         % uncomment this line to view the principal components (a.k.a.
         % Eigenfaces) as images.
-        % viewComponents(prinComponents, imgHeight); 
+        viewComponents(prinComponents, imgHeight);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
@@ -99,13 +99,13 @@ function label = compareFaces(method, testImg)
         numComponentsToKeep = 20;
         prinComponents = [];
         weightCols = [];
-        
+        [prinComponents, weightCols] = fisherfaces(A,imageOwner,numComponentsToKeep);
+        testw=prinComponents'*testImg;
         indexOfClosestMatch = 0;
-        
-        
+        [~, indexOfClosestMatch] = indexOfClosestColumn(weightCols, testw);
         % uncomment this line to view the principal components (a.k.a.
         % Eigenfaces or Fisherfaces) as images.
-        viewComponents(prinComponents, imgHeight); 
+        viewComponents(prinComponents, imgHeight);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
         %                            END YOUR CODE                            %
@@ -114,13 +114,13 @@ function label = compareFaces(method, testImg)
     else
         error('invalid method name');
     end
-    
+
     % Displays the test image and its closest match, and prints whether the
     % closest match was labeled
     viewMatch(rawFaceMatrix(:,indexOfClosestMatch), testImg+meanFace, imgHeight);
-        
-    
-    
+
+
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %                                                                     %
     %                       YOUR PART 1 CODE HERE                         %
@@ -129,15 +129,15 @@ function label = compareFaces(method, testImg)
     % Nearest Neighbor: Find the label of the closest-matched training
     % example. (The imageOwner array holds the labels).
     label = 1;
-    
+    label=imageOwner(indexOfClosestMatch);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %                                                                     %
     %                            END YOUR CODE                            %
     %                                                                     %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     % Sarah Connor was subject number 16 in the labeled training data.
-    sarahConnorsID = 16; 
+    sarahConnorsID = 16;
     if label == sarahConnorsID
         disp('>>>> That is Sarah Connor. <<<<');
         beep;
@@ -165,7 +165,10 @@ function [minDist, indexOfClosest] = indexOfClosestColumn(A, testColumn)
     %                                                                     %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Implement the function as described above.
-    
+    dist = pdist2(A', testColumn');
+    minDist = min(dist);
+    indexOfClosest=find(dist==minDist);
+    indexOfClosest=indexOfClosest(1);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %                                                                     %
     %                            END YOUR CODE                            %
