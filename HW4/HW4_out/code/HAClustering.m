@@ -157,7 +157,10 @@ function idx = HAClustering(X, k, visualize2D)
         %                            YOUR CODE HERE                           %
         %                                                                     %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        centroids(i,:)=mean([centroids(i,:);centroids(j,:)]);
+        sizeI = cluster_sizes(i);
+        sizeJ = cluster_sizes(j);
+        sum = centroids(i,:) .* sizeI + centroids(j,:) .* sizeJ;
+        centroids(i,:) = sum / (sizeI + sizeJ);
         centroids(j,:)=Inf;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %                                                                     %
