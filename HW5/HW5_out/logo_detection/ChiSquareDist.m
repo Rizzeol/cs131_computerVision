@@ -14,11 +14,13 @@ function D = ChiSquareDist( I1, I2, nbins )
     if nargin == 2,
         nbins = 20;
     end
-    
-	
+
+
 	D = 0;
     % YOUR CODE STARTS HERE
-    
+    h1=Histogram(I1, nbins);
+    h2=Histogram(I2, nbins);
+    D=nansum(power(h1-h2,2)./(h1+h2));
+
     % YOUR CODE ENDS HERE
 end
-

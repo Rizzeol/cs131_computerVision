@@ -14,9 +14,11 @@ function D = HistIntersectDist( I1, I2, nbins)
     if nargin == 2,
         nbins = 20;
     end
-    
+
 	D = 0;
     % YOUR CODE STARTS HERE
-    
+    h1=Histogram(I1, nbins);
+    h2=Histogram(I2, nbins);
+    D=sum(min(h1,h2));
     % YOUR CODE ENDS HERE
 end
